@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-from functools import partial, wraps
+from functools import partial, wraps, update_wrapper
 from contextlib import contextmanager
 from easypy.timing import Timer
 from easypy.units import Duration
@@ -175,3 +175,77 @@ def raise_if_async_exception(exc):
     if getattr(exc, "_raised_asynchronously", False):
         _logger.info('Raising asynchronous error')
         raise exc
+
+
+@parametrizeable_decorator
+def exception_to_boolean(func, *, acceptable=Exception, unacceptable=()):
+    """
+    Decorator to create a function that returns ``False`` if the underlying
+    function threw and ``True`` otherwise.
+
+    :param acceptable: Exception type (or tuple of exception types) to convert to ``bool``.
+    :param unacceptable: Exception type (or tuple of exception types) to let through.
+        * The exceptions in ``easypy.resilience.UNACCEPTABLE_EXCEPTIONS`` will always be unacceptable.
+
+    The underlying function or method can be accessed with the ``.func``
+    attribute of the decorated one. Use this decorator to easily create chains
+    of functions that are generally used as predicates but can - when needed -
+    raise the underlying exception for more info.
+
+    >>> @exception_to_boolean(acceptable=BadValueException)
+    >>> def check_single_value(value):
+    >>>     allowed_values = {1, 2, 3}
+    >>>     if value not in allowed_values:
+    >>>         raise BadValueException(bad_value=value, allowed=allowed_values)
+    >>>
+    >>>
+    >>> @exception_to_boolean(acceptable=BadValueException)
+    >>> def check_values(*values):
+    >>>     for value in values:
+    >>>         check_single_value.func(value)
+    >>>
+    >>> # Call regularly to use as a predicate
+    >>>
+    >>> check_values(1, 2, 3)
+    True
+    >>>
+    >>> check_values(1, 2, 3, 4)
+    False
+    >>>
+    >>> # Use .func() to get the exception
+    >>>
+    >>> check_values.func(1, 2, 3)
+    >>>
+    >>> check_values.func(1, 2, 3, 4)
+    BadValueException: Value should be one of {1, 2, 3}, not 4
+    """
+    return _ExceptionToBooleanDescriptor(
+        func=func,
+        acceptable=acceptable,
+        unacceptable=unacceptable)
+
+
+class _ExceptionToBooleanDescriptor:
+    def __init__(self, func, acceptable, unacceptable):
+        self.func = func
+        self._acceptable = acceptable
+        self._unacceptable = unacceptable
+        update_wrapper(self, func)
+
+    def __call__(self, *args, **kwargs):
+        try:
+            self.func(*args, **kwargs)
+        except self._unacceptable:
+            raise
+        except UNACCEPTABLE_EXCEPTIONS:
+            raise
+        except self._acceptable:
+            return False
+        else:
+            return True
+
+    def __get__(self, instance, owner=None):
+        return type(self)(
+            func=self.func.__get__(instance, owner),
+            acceptable=self._acceptable,
+            unacceptable=self._unacceptable)
