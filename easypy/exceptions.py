@@ -1,17 +1,34 @@
 from __future__ import absolute_import
+
 import sys
-import traceback
+from traceback import format_exc, extract_tb
 from time import time
 from datetime import datetime
 from contextlib import contextmanager
 from textwrap import indent
 from logging import getLogger
+
+
 _logger = getLogger(__name__)
 
 
 class PException(Exception):
+    """
+    An exception object that can accept kwargs as attributes
 
-    """An exception object that can accept kwargs as attributes"""
+    Example::
+
+        >>> class NotEnoughCookies(PException):
+        ...     template = "You don't have enough cookies available"
+        >>>
+        >>> raise NotEnoughCookies(wanted=10, available=8, day='Thursday')
+        Traceback (most recent call last):
+            ...
+        NotEnoughCookies: You don't have enough cookies available
+            available = 8
+            day = Thursday
+            wanted = 10
+    """
 
     def __init__(self, message="", *args, **params):
         if args or params:
@@ -20,7 +37,7 @@ class PException(Exception):
         self.context = params.pop("context", None)
         self.traceback = params.pop("traceback", None)
         if self.traceback is True:
-            self.traceback = traceback.format_exc()
+            self.traceback = format_exc()
         self.message = message
         self.timestamp = params.pop('timestamp', time())
         if 'tip' not in params:
@@ -96,6 +113,39 @@ class PException(Exception):
             raise cls(traceback=True, **kwargs) from None
 
 
+class TException(PException):
+    """ An exception object with a formatted message
+
+    Makes it easier to reuse an exception message template.
+    This object must be defined with a *template* property, this template will
+    be formatted with later passed keyword arguments. You may pass kwargs which
+    are not included in the template string.
+
+    Example::
+
+        >>> class NotEnoughPeanuts(TException):
+        ...     template = "You can't have {wanted} peanuts, there are only {available} left"
+        >>>
+        >>> raise NotEnoughPeanuts(wanted=10, available=8, day='Thursday')
+        NotEnoughPeanuts: You can't have 10 peanuts, there are only 8 left
+            available = 8
+            day = Thursday
+            wanted = 10
+
+    """
+
+    @property
+    def template(self):
+        raise NotImplementedError("Must implement template")
+
+    def __init__(self, *args, **params):
+        super(TException, self).__init__(self.template, *args, **params)
+
+    @classmethod
+    def make(cls, name, template):
+        return type(name, (cls,), dict(template=template))
+
+
 def make_block(d, skip={}):
     for k in sorted(d):
         if k.startswith("_"):
@@ -119,22 +169,15 @@ def make_block(d, skip={}):
         yield block + "\n"
 
 
-class TException(PException):
-
-    @property
-    def template(self):
-        raise NotImplementedError("Must implement template")
-
-    def __init__(self, *args, **params):
-        super(TException, self).__init__(self.template, *args, **params)
-
-    @classmethod
-    def make(cls, name, template):
-        return type(name, (cls,), dict(template=template))
-
-
 def convert_traceback_to_list(tb):
-    # convert to list of dictionaries that contain file, line_no and function
-    traceback_list = [dict(file=file, line_no=line_no, function=function)
-                      for file, line_no, function, _ in traceback.extract_tb(tb)]
-    return traceback_list
+    """
+    Convert a traceback to to list of dictionaries that contain file, line_no and function
+
+    :param tb: A traceback object
+    :type tb: ``builtins.traceback``
+    """
+
+    return [
+        dict(file=file, line_no=line_no, function=function)
+        for file, line_no, function, _ in extract_tb(tb)
+    ]
