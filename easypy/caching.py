@@ -217,23 +217,6 @@ else:
 
 
 class _TimeCache(DecoratingDescriptor):
-    """
-    A thread-safe cache decorator with time expiration.
-
-    :param expiration: if a positive number, set an expiration on the cache, defaults to 0
-    :type expiration: number, optional
-    :param typed: If typed is set to true, function arguments of different types will be cached separately, defaults to False
-    :type typed: bool, optional
-    :param get_ts_func: The function to be used in order to get the current time, defaults to time.time
-    :type get_ts_func: callable, optional
-    :param log_recalculation: Whether or not to log cache misses, defaults to False
-    :type log_recalculation: bool, optional
-    :param ignored_keywords: Arguments to ignore when caculating item key, defaults to None
-    :type ignored_keywords: iterable, optional
-    :param key_func: The function to use in order to create the item key, defaults to functools._make_key
-    :type key_func: callable, optional
-    """
-
     def __init__(self, func, **kwargs):
         super().__init__(func=func, cached=True)
         self.func = func
@@ -316,6 +299,22 @@ class _TimeCache(DecoratingDescriptor):
 
 
 def timecache(expiration=0, typed=False, get_ts_func=time.time, log_recalculation=False, ignored_keywords=None, key_func=None):
+    """
+    A thread-safe cache decorator with time expiration.
+
+    :param expiration: if a positive number, set an expiration on the cache, defaults to 0
+    :type expiration: number, optional
+    :param typed: If typed is set to true, function arguments of different types will be cached separately, defaults to False
+    :type typed: bool, optional
+    :param get_ts_func: The function to be used in order to get the current time, defaults to time.time
+    :type get_ts_func: callable, optional
+    :param log_recalculation: Whether or not to log cache misses, defaults to False
+    :type log_recalculation: bool, optional
+    :param ignored_keywords: Arguments to ignore when caculating item key, defaults to None
+    :type ignored_keywords: iterable, optional
+    :param key_func: The function to use in order to create the item key, defaults to functools._make_key
+    :type key_func: callable, optional
+    """
 
     def deco(func):
         return _TimeCache(
