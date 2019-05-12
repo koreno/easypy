@@ -155,7 +155,7 @@ def retry(times, func, args=[], kwargs={}, acceptable=Exception, sleep=1,
             time.sleep(sleep_for)
 
 
-def retrying(times, acceptable=Exception, sleep=1, max_sleep=False, log_level=logging.DEBUG, pred=None):
+def retrying(times, acceptable=Exception, sleep=1, max_sleep=False, log_level=logging.DEBUG, pred=None, unacceptable=False):
     """Try running the decorated function, retrying if an acceptable exception caught.
 
     times - limit number of attempts before errors are propagated instead of suppressed.
@@ -174,14 +174,15 @@ def retrying(times, acceptable=Exception, sleep=1, max_sleep=False, log_level=lo
     ...         raise Exception('No luck')
     ...     return 'Got lucky'
     """
+
     def wrapper(func):
         @wraps(func)
         def impl(*args, **kwargs):
-            return retry(
-                times, func, args, kwargs,
-                sleep=sleep, max_sleep=max_sleep,
-                acceptable=acceptable, log_level=log_level,
-                pred=pred)
+            retry_params = dict(sleep=sleep, max_sleep=max_sleep, acceptable=acceptable, log_level=log_level, pred=pred)
+            if unacceptable is not False:
+                retry_params.update(unacceptable=unacceptable)
+
+            return retry(times, func, args, kwargs, **retry_params)
         return impl
     return wrapper
 
