@@ -76,9 +76,9 @@ import time
 import os
 from collections import namedtuple
 from datetime import datetime
-from unittest.mock import MagicMock
 
 import easypy._multithreading_init  # noqa; make it initialize the threads tree
+from easypy._logger_init import DeferredEasypyLogger
 from easypy.exceptions import PException
 from easypy.gevent import is_module_patched, non_gevent_sleep, defer_to_thread
 from easypy.humanize import IndentableTextBuffer, time_duration, compact
@@ -117,7 +117,7 @@ except ImportError:
             yield filename, lineno, name
 
 
-_logger = logging.getLogger(__name__)
+_logger = DeferredEasypyLogger(name=__name__)
 
 
 def disable():

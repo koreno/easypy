@@ -6,7 +6,7 @@ except ImportError:
         return False
 
 
-from logging import getLogger, DEBUG
+from easypy._logger_init import DeferredEasypyLogger
 import threading   # this will be reloaded after patching
 
 from queue import Queue
@@ -20,7 +20,7 @@ from easypy.humanize import format_thread_stack
 from ._multithreading_init import _set_thread_uuid, _set_main_uuid
 
 
-_logger = getLogger('gevent')
+_logger = DeferredEasypyLogger(name='gevent')
 
 
 main_thread_ident_before_patching = threading.main_thread().ident

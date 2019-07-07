@@ -1,8 +1,39 @@
-import easypy
-import pkgutil
 import pytest
 
-packages = [name for ff, name, is_pkg in pkgutil.walk_packages(easypy.__path__)]
+packages = list(filter(None, """
+_multithreading_init
+aliasing
+bunch
+caching
+collections
+colors
+concurrency
+contexts
+decorations
+deprecation
+exceptions
+fixtures
+gevent
+humanize
+interaction
+lockstep
+meta
+misc
+predicates
+properties
+random
+resilience
+signals
+sync
+tables
+threadtree
+timing
+tokens
+typed_struct
+units
+words
+ziplog
+""".split()))
 
 
 @pytest.mark.parametrize("package", packages)

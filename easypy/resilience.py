@@ -1,18 +1,18 @@
 from __future__ import absolute_import
 
-from functools import partial, wraps
-from contextlib import contextmanager
-from easypy.timing import Timer
-from easypy.units import Duration
 import random
 import time
-
-from .decorations import parametrizeable_decorator
-
-
 import logging
-from logging import getLogger
-_logger = getLogger(__name__)
+from functools import partial, wraps
+from contextlib import contextmanager
+
+from easypy.timing import Timer
+from easypy.units import Duration
+from easypy._logger_init import DeferredEasypyLogger
+from easypy.decorations import parametrizeable_decorator
+
+
+_logger = DeferredEasypyLogger(name=__name__)
 
 
 UNACCEPTABLE_EXCEPTIONS = (NameError, AttributeError, TypeError, KeyboardInterrupt)

@@ -135,9 +135,10 @@ class Colorized(str):
                 continue
             match = RE_PARSE_COLOR_MARKUP.match(part)
             if match:
-                stl, part1, part2 = match.groups()
+                stl = match.groups()[0]
+                parts = match.groups()[1:]
                 stl = stl.strip("_")
-                part = part1 or part2 or ""
+                part = next(filter(None, parts), "")
                 for l in part.splitlines():
                     self.tokens.append(self.ColoredToken(l, stl))
                     self.tokens.append(self.Token("\n"))
@@ -323,7 +324,7 @@ def uncolored(text, ansi=True, markup=True):
     if ansi:
         text = re.sub(re.escape(ANSI_BEGIN) + '.+?m', "", text)
     if markup:
-        text = RE_PARSE_COLOR_MARKUP.sub(lambda m: m.group(2) or m.group(3), text)
+        text = RE_PARSE_COLOR_MARKUP.sub(lambda m: next(filter(None, m.groups()[1:])), text)
     return text
 
 
@@ -336,7 +337,7 @@ def colorize(text):
 
     def _subfunc(match_obj):
         colorizer = Colorizer.from_markup(match_obj.group(1))
-        return colorizer(match_obj.group(2) or match_obj.group(3))
+        return colorizer(next(filter(None, match_obj.groups()[1:])))
 
     return RE_PARSE_COLOR_MARKUP.sub(_subfunc, text)
 
@@ -351,8 +352,9 @@ class Colorizer():
     """
 
     COLORIZERS = {}
+    COLORIZERS[None, None, False] = COLORIZERS['none'] = lambda text: text
 
-    def __new__(cls, color='white', background=None, underline=False, name=None):
+    def __new__(cls, color=None, background=None, underline=False, name=None):
         if name:
             name = name.lower()
             try:
@@ -372,7 +374,7 @@ class Colorizer():
 
         return ret
 
-    def __init__(self, color='white', background=None, underline=False, name=None):
+    def __init__(self, color=None, background=None, underline=False, name=None):
         self.color = color
         self.background = background
         self.underline = underline
@@ -419,10 +421,10 @@ class Colorizer():
         except KeyError:
             pass
         color, background = (c and c.lower().strip("_") for c in cls.RE_PARSE_COLOR_SPEC.match(markup).groups())
-        if color not in COLORS:
-            color = "white"
         if background not in COLORS:
             background = None
+        if color not in COLORS:
+            color = "white" if background else None
         return cls(color=color, background=background, name=markup)
 
 
@@ -439,13 +441,15 @@ def register_colorizers(**styles):
 
     ret = {}
     for name, style in styles.items():
+        fg = bg = None
+        underline = False
         if isinstance(style, str):
             fg = style
-            bg = None
-            underline = False
         elif isinstance(style, tuple):
             fg, bg, *more = style
             underline = more[0] if more else False
+        elif style is None:
+            pass
         else:
             raise ValueError("Invalid style: %r (expecting an str or a fg/bg tuple)", (style,))
         ret[name] = Colorizer(name=name, color=fg, background=bg, underline=underline)

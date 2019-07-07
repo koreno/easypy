@@ -10,18 +10,17 @@ import time
 import logging
 from copy import deepcopy
 from contextlib import contextmanager
-from logging import getLogger
 import _thread
 import threading
 
+from easypy._logger_init import DeferredEasypyLogger
 from easypy.humanize import format_thread_stack
-
 from easypy.gevent import main_thread_ident_before_patching, is_module_patched
-from .bunch import Bunch
-from .collections import ilistify
+from easypy.bunch import Bunch
+from easypy.collections import ilistify
+from easypy._multithreading_init import UUIDS_TREE, IDENT_TO_UUID, UUID_TO_IDENT, MAIN_UUID
 
-from ._multithreading_init import UUIDS_TREE, IDENT_TO_UUID, UUID_TO_IDENT, MAIN_UUID
-_logger = getLogger(__name__)
+_logger = DeferredEasypyLogger(name=__name__)
 
 
 def get_thread_uuid(thread=None):
@@ -288,8 +287,8 @@ def watch_threads(interval, logger_name='threads'):
     from easypy.concurrency import concurrent
 
     cmdline = " ".join(sys.argv)
-    _logger = logging.getLogger(__name__)
-    _threads_logger = logging.getLogger(logger_name)
+    _logger = logging.DeferredEasypyLogger(name=__name__)
+    _threads_logger = logging.DeferredEasypyLogger(name=logger_name)
 
     last_threads = set()
 
