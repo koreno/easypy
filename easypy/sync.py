@@ -1081,9 +1081,10 @@ def iter_wait(
 
 @wraps(iter_wait)
 def wait(*args, **kwargs):
-    """Wait until ``pred`` returns True (by polling it), or until ``timeout`` passes.
+    """
+    Wait until ``pred`` returns a useful value (see below), or until ``timeout`` passes.
 
-    :param timeout: how long to wait for ``pred`` to return True. if ``None`` waits
+    :param timeout: how long to wait for ``pred`` to get satisfied. if ``None`` waits
         indefinitely.
     :param pred: callable that checks the condition to wait upon.
         if it returns anything but ``None`` or ``False`` then ``wait`` will finish.
