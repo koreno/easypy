@@ -1,4 +1,5 @@
 import pytest
+import sys
 
 packages = list(filter(None, """
 _multithreading_init
@@ -38,4 +39,7 @@ ziplog
 
 @pytest.mark.parametrize("package", packages)
 def test_package(package):
+    for n in sorted(sys.modules):
+        if n.startswith("easypy."):
+            sys.modules.pop(n)
     __import__("easypy.%s" % package)

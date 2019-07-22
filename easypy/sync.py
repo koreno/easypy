@@ -1169,3 +1169,6 @@ def iter_wait_progress(state_getter, advance_timeout, total_timeout=float("inf")
 
     progress.finished = True
     yield progress  # indicate success
+
+
+from .timing import Timer  # noqa; avoid import cycle
