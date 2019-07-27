@@ -15,22 +15,20 @@ import atexit
 import signal
 import os
 from collections import Counter
-from easypy._logger_init import DeferredEasypyLogger
 
-import easypy._multithreading_init
-from easypy.bunch import Bunch
-from easypy.gevent import is_module_patched
-from easypy.decorations import wrapper_decorator, parametrizeable_decorator
-from easypy.caching import locking_cache
-from easypy.exceptions import PException, TException
-from easypy.units import NEVER, MINUTE, HOUR
-from easypy.misc import Hex
-from easypy.timing import Timer
-from easypy.humanize import time_duration  # due to interference with jrpc
-from easypy.misc import kwargs_resilient
+import easypy._multithreading_init  # noqa
+from .bunch import Bunch
+from .gevent import is_module_patched
+from .decorations import wrapper_decorator, parametrizeable_decorator
+from .caching import locking_cache
+from .exceptions import PException, TException
+from .units import NEVER, MINUTE, HOUR
+from .misc import Hex
+from .humanize import time_duration  # due to interference with jrpc
+from .misc import kwargs_resilient
 
-_logger = DeferredEasypyLogger(name=__name__)
-_verbose_logger = DeferredEasypyLogger(name='%s.locks' % __name__)  # logger for less important logs of RWLock.
+_logger = logging.getLogger(__name__)
+_verbose_logger = logging.getLogger('%s.locks' % __name__)  # logger for less important logs of RWLock.
 
 IS_A_TTY = sys.stdout.isatty()
 
@@ -576,7 +574,7 @@ class LoggedRLock():
     LockType = threading.RLock
 
     __slots__ = ("_lock", "_name", "_lease_expiration", "_lease_timer", "_log_interval", "_get_data")
-    _RE_OWNER = re.compile(r".*owner=(\d+) count=(\d+).*")
+    _RE_OWNER = re.compile(".*owner=(\d+) count=(\d+).*")
     _MIN_TIME_FOR_LOGGING = 10
 
     def __init__(self, name=None, log_interval=15, lease_expiration=NEVER):
@@ -1024,7 +1022,7 @@ def iter_wait(
 
     with ExitStack() as stack:
         if progressbar:
-            from .logging.progressbar import PROGRESS_BAR
+            from .logging import PROGRESS_BAR
             pr = stack.enter_context(PROGRESS_BAR())
             pr.set_message(msg)
 

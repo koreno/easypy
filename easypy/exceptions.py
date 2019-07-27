@@ -5,8 +5,8 @@ from time import time
 from datetime import datetime
 from contextlib import contextmanager
 from textwrap import indent
-from easypy._logger_init import DeferredEasypyLogger
-_logger = DeferredEasypyLogger(name=__name__)
+from logging import getLogger
+_logger = getLogger(__name__)
 
 
 class PException(Exception):
@@ -29,7 +29,7 @@ class PException(Exception):
         self._params = {}
         self.add_params(**params)
 
-    def __reduce__(self):
+    def __reduce_ex__(self, protocol):
         return (self.__class__.__new__, (self.__class__,), self.__getstate__())
 
     def __getstate__(self):

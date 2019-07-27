@@ -14,10 +14,9 @@ from easypy.exceptions import TException
 from easypy.contexts import is_contextmanager
 from easypy.misc import kwargs_resilient, WeakMethodDead
 from easypy.collections import separate
-from easypy._logger_init import DeferredEasypyLogger
 
 PRIORITIES = Enum("PRIORITIES", "FIRST NONE LAST")
-_logger = DeferredEasypyLogger(name=__name__)
+_logger = logging.getLogger(__name__)
 
 
 ids = set()
@@ -376,6 +375,11 @@ run_async = _set_handler_params(asynchronous=True)
 run_sync = _set_handler_params(asynchronous=False)
 
 
+def dont_register(func):
+    func._signals_dont_register = True
+    return func
+
+
 @functools.lru_cache(None)
 def get_signals_for_type(typ):
     return {n for typ in inspect.getmro(typ)
@@ -399,6 +403,9 @@ def register_object(obj, **kwargs):
     for method_name in get_signals_for_type(type(obj)):
         method = getattr(obj, method_name)
         assert callable(method), "'%s' (%r) is not callable" % (method, obj)
+
+        if getattr(method, "_signals_dont_register", False):
+            continue
 
         # Don't use static/class methods for automatic event registration - they
         # could be registered multiple times if the are multiple objects of that

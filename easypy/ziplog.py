@@ -34,10 +34,6 @@ TIMESTAMP_GETTERS = [
     (re.compile(r"^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6})(\+\d{2}):(\d{2})"),
      lambda *args: datetime.strptime("{}{}{}".format(*args), '%Y-%m-%dT%H:%M:%S.%f%z').timestamp()),
 
-    # 2019-07-08T20:48:21.088182887Z
-    (re.compile(r"^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6})\d*Z"),
-     lambda ts: datetime.strptime(ts, '%Y-%m-%dT%H:%M:%S.%f').timestamp()),
-
     # 2018-04-06 17:13:40
     # 2018-04-06 17:13:40.955356
     # [2018/04/06 17:13:40
@@ -159,7 +155,7 @@ def main():
     parser = argparse.ArgumentParser(description='ZipLog - merge logs by timestamps')
     parser.add_argument(
         'logs', metavar='N', type=str, nargs='+',
-        help='log files')
+        help='Log files; Use "-" for STDIN')
     parser.add_argument(
         '-i', '--interval', dest='interval', default=None,
         help="Show interval by seconds (s), or milliseconds (ms)")
@@ -168,7 +164,7 @@ def main():
         help="A prefix to prepend to timestamped lines")
     ns = parser.parse_args(sys.argv[1:])
 
-    files = map(open, ns.logs)
+    files = [sys.stdin if f == "-" else open(f) for f in ns.logs]
     try:
         for line in iter_zipped_logs(*files, show_intervals=ns.interval, prefix=ns.prefix):
             print(line, end="")

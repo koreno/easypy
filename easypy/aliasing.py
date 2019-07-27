@@ -54,7 +54,7 @@ def aliases(name, static=True):
         @aliases('b', static=False)
         class A():
             def __init__(self):
-                self.b = B()
+                b = B()
 
         a = A()
         a.foo()  # delegated to b.foo()
@@ -62,5 +62,7 @@ def aliases(name, static=True):
     """
     def deco(cls):
         assert not static or hasattr(cls, name)
-        return type(cls.__name__, (cls, AliasingMixin), dict(_ALIAS=name, __module__=cls.__module__))
+        cls._ALIAS = name
+        cls.__bases__ = cls.__bases__ + (AliasingMixin, )
+        return cls
     return deco

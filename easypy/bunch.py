@@ -1,3 +1,5 @@
+from easypy.exceptions import TException
+
 # TODO: some methods like fromkeys/update can insert keys which are not strings - and that causes problems.
 #       need to either convert keys to strings (like in _convert), or raise ValueError.
 class Bunch(dict):
