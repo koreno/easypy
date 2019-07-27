@@ -20,6 +20,7 @@ before_script:
   - export TZ=Asia/Jerusalem
 
 script:
+  - python -m pytest -vv test_package.py  # separate, since it mucks with imports
   - python -m pytest -vv tests
   - python -m pytest -vv --doctest-modules easypy
 
