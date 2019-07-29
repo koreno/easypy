@@ -375,6 +375,29 @@ run_async = _set_handler_params(asynchronous=True)
 run_sync = _set_handler_params(asynchronous=False)
 
 
+def dont_register(func):
+    """
+    Decorator for hiding 'on_...' methods from ``register_object``::
+
+        class MyObject():
+
+            def __init__(self):
+                signals.register_object(self)
+
+            def on_init(self):
+                # this gets registered with the `on_init` signal
+                pass
+
+            @dont_register
+            def on_the_table(self):
+                # this will not get registered
+                pass
+
+    """
+    func._signals_dont_register = True
+    return func
+
+
 @functools.lru_cache(None)
 def get_signals_for_type(typ):
     return {n for typ in inspect.getmro(typ)
@@ -398,6 +421,9 @@ def register_object(obj, **kwargs):
     for method_name in get_signals_for_type(type(obj)):
         method = getattr(obj, method_name)
         assert callable(method), "'%s' (%r) is not callable" % (method, obj)
+
+        if getattr(method, "_signals_dont_register", False):
+            continue
 
         # Don't use static/class methods for automatic event registration - they
         # could be registered multiple times if the are multiple objects of that
