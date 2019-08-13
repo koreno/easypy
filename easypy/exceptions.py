@@ -29,7 +29,7 @@ class PException(Exception):
         self._params = {}
         self.add_params(**params)
 
-    def __reduce_ex__(self, protocol):
+    def __reduce__(self):
         return (self.__class__.__new__, (self.__class__,), self.__getstate__())
 
     def __getstate__(self):

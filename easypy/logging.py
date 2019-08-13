@@ -554,6 +554,7 @@ def log_context(method=None, **ctx):
 # this module when looking for the caller of a logger.log function
 
 try:
+    # restore, in case we've already mocked this, as when running unit-tests
     logging._srcfile = logging._orig_srcfile
 except AttributeError:
     logging._orig_srcfile = logging._srcfile

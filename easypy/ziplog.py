@@ -34,17 +34,17 @@ TIMESTAMP_GETTERS = [
     (re.compile(r"^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6})(\+\d{2}):(\d{2})"),
      lambda *args: datetime.strptime("{}{}{}".format(*args), '%Y-%m-%dT%H:%M:%S.%f%z').timestamp()),
 
+    # 2018-04-06 17:13:40,955
+    # 2018-04-23 04:48:11,811|
+    (re.compile(r"(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}),(\d{3})[| ]"),
+     lambda ts, ms: time.mktime(time.strptime(ts, "%Y-%m-%d %H:%M:%S")) + float(ms) / 1000),
+
     # 2018-04-06 17:13:40
     # 2018-04-06 17:13:40.955356
     # [2018/04/06 17:13:40
     # [2018/04/06 17:13:40.955356
     (re.compile(r"^\[?(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})(?:\.(\d{6}))?"),
      lambda ts, ms: time.mktime(time.strptime(ts.replace("/", "-"), "%Y-%m-%d %H:%M:%S")) + float(ms or 0) / 1000000),
-
-    # 2018-04-06 17:13:40,955
-    # 2018-04-23 04:48:11,811|
-    (re.compile(r"(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}),(\d{3})[| ]"),
-     lambda ts, ms: time.mktime(time.strptime(ts, "%Y-%m-%d %H:%M:%S")) + float(ms) / 1000),
 
     # for strace logs
     # 16255 15:08:52.554223

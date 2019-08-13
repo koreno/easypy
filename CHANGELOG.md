@@ -21,8 +21,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - expose as a cli tool - `ziplog`
   - added commonly found timestamp patterns
 - colors
-  - expose as a cli tool - `colorize
+  - expose as a cli tool - `colorize`
 - random: added `perchance(probabilty)`
+- signals: allow hiding `on_*` methods from `register_object`
 - Examples
 	- a skeleton for initializing logging with easypy
 
