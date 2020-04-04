@@ -9,7 +9,6 @@ except ImportError:
 from logging import getLogger, DEBUG
 import threading   # this will be reloaded after patching
 
-from queue import Queue
 import time
 import sys
 from functools import partial
@@ -175,6 +174,13 @@ class _RealThreadsPool():
 
     def __init__(self, pool_size):
         assert not self.__class__.POOL, "Can't create more than one: %s" % self.__class__
+        from queue import Queue
+        # We use queue.Queue, which uses threading.Condition which uses threading._allocate_lock
+        # We want this _allocate_lock to remain unpatched for use by our real threads,
+        # so we "hide" these modules from gevent.monkey
+        for m in ["threading", "queue"]:
+            sys.modules.pop(m, None)
+
         self.__class__.POOL = self
         self.active_jobs = set()
         self.pool_size = pool_size
