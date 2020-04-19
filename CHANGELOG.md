@@ -5,6 +5,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+- resilience: support returning exceptions captured by `resilient` decorator
+
+### Changed
+- Logging Initialization
+    - a run-once `initialize` method takes care of it all
+    - removed `set_width`, `set_coloring`, `set_graphics`
+    - the env-var `TERM_COLOR_SUPPORT` is no longer checked
+    - the env-var `EASYPY_LOG_INDENTATION` is no longer checked
+- DataSize - return 'byte' and 'MiB' instead of '1 byte' and '1 MiB'
+
+### Added
+- Examples
+    - a skeleton for initializing logging with easypy
 
 ### Added
 - `ensure_same_defaults` decorator for setting one function's defaults as source of truth for other function
